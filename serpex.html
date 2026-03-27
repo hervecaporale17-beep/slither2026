@@ -1935,7 +1935,7 @@
       <div style="font-family:'Orbitron',monospace;font-size:1.1rem;font-weight:900;color:var(--neon-cyan);text-shadow:var(--glow-cyan);">&#9876;&#65039; CHOISIR TON BUILD</div>
       <div style="width:64px;"></div>
     </div>
-    <div style="font-size:0.65rem;color:rgba(255,255,255,0.4);text-align:center;margin-top:0.2rem;">Choisis ton skin + 3 compétences</div>
+    <div style="font-size:0.65rem;color:rgba(255,255,255,0.4);text-align:center;margin-top:0.2rem;">Sélectionne 3 compétences</div>
   </div>
 
   <div style="width:100%;display:flex;flex-direction:column;align-items:center;padding:1rem 1rem 2rem;">
@@ -1948,12 +1948,6 @@
 
     <!-- Bouton jouer -->
     <button class="btn btn-primary" id="buildPlayBtn" onclick="launchWithBuild()" style="width:min(420px,95vw);margin-bottom:1.2rem;opacity:0.4;pointer-events:none;">&#9889; JOUER</button>
-
-    <!-- Section Skin -->
-    <div id="buildSkinSection" style="width:min(420px,95vw);margin-bottom:1.2rem;">
-      <div style="font-family:'Orbitron',monospace;font-size:0.6rem;color:var(--neon-cyan);padding:0.3rem 0;border-bottom:1px solid rgba(0,245,255,0.2);margin-bottom:0.6rem;letter-spacing:0.1em;">&#127773; TON SKIN</div>
-      <div id="buildSkinGrid" style="display:flex;flex-wrap:wrap;gap:0.5rem;justify-content:flex-start;"></div>
-    </div>
 
     <!-- Grille des skills -->
     <div class="build-grid" id="buildGrid"></div>
@@ -2613,7 +2607,6 @@ function onLoginSuccess() {
     titles:             currentUser.titles || [],
     equippedTitle:      currentUser.equipped_title || null,
     equippedAccessories: currentUser.equipped_accessories || [],
-    equippedBoosts:      currentUser.equipped_boosts || [],
     vipLevel:           currentUser.vip_level || 0,
     lastVipClaim:       currentUser.last_vip_claim || null,
     vipExpiry:          currentUser.vip_expiry || null,
@@ -2823,7 +2816,6 @@ async function saveNow(isGameEnd = false) {
     daily_streak:        sd.dailyStreak || 0,
     last_season_key:     sd.lastSeasonKey || ('season_' + getCurrentSeason().num),
     equipped_accessories: sd.equippedAccessories || [],
-    equipped_boosts:     sd.equippedBoosts || [],
   };
 
   currentUser = { ...currentUser, ...update };
@@ -3040,7 +3032,6 @@ let sd = {
   claimedBPRewards: [],
   titles: [],
   equippedAccessories: [], // max 2 slots
-  equippedBoosts: [],       // max 3 boosts VIP actifs
   vipLevel: 0,
   lastVipClaim: null,
   vipExpiry: null,
@@ -3137,8 +3128,7 @@ function calcXPGained(score, kills, durationSeconds) {
   const xpFromKills  = kills * 8;
   const xpFromTime   = Math.floor(durationSeconds * 0.07);
   const vipMult = getVipXPMult();
-  const xpBoostMult = hasStat('xpBoost') || 1;
-  return Math.floor((xpFromScore + xpFromKills + xpFromTime) * vipMult * xpBoostMult);
+  return Math.floor((xpFromScore + xpFromKills + xpFromTime) * vipMult);
 }
 
 // Récompenses par level
@@ -3188,9 +3178,7 @@ function updateXPBar() {
   if (barEl) barEl.style.width  = pct + '%';
 }
 function hasStat(stat) {
-  const equipped = sd.equippedBoosts || [];
-  return SHOP_ITEMS.filter(i => i.stat === stat && isOwned(i.id) && equipped.includes(i.id))
-    .reduce((acc,i) => acc + i.val, 0);
+  return SHOP_ITEMS.filter(i => i.stat === stat && isOwned(i.id)).reduce((acc,i) => acc + i.val, 0);
 }
 
 // \u{2500}\u{2500} SCREENS \u{2500}\u{2500}
@@ -3226,9 +3214,6 @@ function renderBuildScreen() {
   if (!grid) return;
   grid.innerHTML = '';
 
-  // Section skin
-  renderBuildSkinSection();
-
   // Séparateur gratuit
   const freeTitle = document.createElement('div');
   freeTitle.style.cssText = 'grid-column:1/-1;font-family:"Orbitron",monospace;font-size:0.6rem;color:#39ff14;padding:0.3rem 0;border-bottom:1px solid rgba(57,255,20,0.2);margin-bottom:0.2rem;';
@@ -3246,86 +3231,6 @@ function renderBuildScreen() {
   ALL_SKILLS.filter(s => s.vipMin).forEach(skill => renderSkillCard(skill, grid));
 
   updateBuildSlots();
-}
-
-// Skins de base gratuits
-const FREE_SKINS = [
-  { id:0,  name:'Vert',    emoji:'🐍', head:'#39ff14', body:['#39ff14','#00cc00','#009900'], tail:'#003300' },
-  { id:1,  name:'Bleu',   emoji:'💎', head:'#00f5ff', body:['#00f5ff','#0088ff','#0044cc'], tail:'#001133' },
-  { id:99, name:'Rouge',  emoji:'🔴', head:'#ff006e', body:['#ff006e','#cc0055','#880033'], tail:'#330011' },
-];
-
-function renderBuildSkinSection() {
-  const skinGrid = document.getElementById('buildSkinGrid');
-  if (!skinGrid) return;
-  skinGrid.innerHTML = '';
-
-  const vipLvl = getPlayerVipLevel();
-
-  // Construire la liste complète des skins accessibles
-  const accessibleSkins = [];
-
-  // Skins gratuits
-  FREE_SKINS.forEach(s => accessibleSkins.push({ ...s, type:'free' }));
-
-  // Skins VIP débloqués selon niveau
-  VIP_SKINS.forEach(s => {
-    if (vipLvl >= s.vipMin) {
-      accessibleSkins.push({ ...s, type:'vip' });
-    } else {
-      accessibleSkins.push({ ...s, type:'vip', locked:true });
-    }
-  });
-
-  // Skins achetés avec coins
-  COIN_SKINS.forEach(s => {
-    if (isOwned('skin_' + s.id)) {
-      accessibleSkins.push({ ...s, type:'coin' });
-    }
-  });
-
-  accessibleSkins.forEach(skin => {
-    const isSelected = (sd?.selectedSkin === skin.id);
-    const isLocked = !!skin.locked;
-
-    const btn = document.createElement('div');
-    btn.style.cssText = `
-      display:flex;flex-direction:column;align-items:center;justify-content:center;
-      width:62px;height:72px;border-radius:12px;cursor:${isLocked?'pointer':'pointer'};
-      background:${isSelected?'rgba(255,215,0,0.15)':'rgba(255,255,255,0.04)'};
-      border:2px solid ${isSelected?'#ffd700':isLocked?'rgba(255,255,255,0.08)':'rgba(255,255,255,0.15)'};
-      box-shadow:${isSelected?'0 0 12px #ffd70066':''};
-      opacity:${isLocked?'0.45':'1'};
-      transition:all 0.2s;
-      position:relative;
-      flex-shrink:0;
-    `;
-
-    // Badge type
-    const badgeColor = skin.type==='vip'?'#ffd700':skin.type==='coin'?'#00f5ff':'#39ff14';
-    const badgeLabel = skin.type==='vip'?`VIP${skin.vipMin}`:skin.type==='coin'?'💰':'FREE';
-
-    btn.innerHTML = `
-      <div style="font-size:1.5rem;line-height:1;">${skin.emoji}</div>
-      <div style="font-size:0.42rem;font-family:'Orbitron',monospace;color:${isSelected?'#ffd700':'rgba(255,255,255,0.6)'};margin-top:2px;text-align:center;max-width:58px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${skin.name}</div>
-      <div style="font-size:0.38rem;font-family:'Orbitron',monospace;color:${badgeColor};margin-top:1px;">${badgeLabel}</div>
-      ${isSelected?'<div style="position:absolute;top:3px;right:5px;font-size:0.55rem;">✅</div>':''}
-      ${isLocked?'<div style="position:absolute;top:3px;right:5px;font-size:0.65rem;">🔒</div>':''}
-    `;
-
-    btn.addEventListener('click', () => {
-      if (isLocked) {
-        showNotif(`🔒 Skin VIP ${skin.vipMin} requis !`);
-        showScreen('vipScreen');
-        return;
-      }
-      if (sd) sd.selectedSkin = skin.id;
-      renderBuildSkinSection();
-      updateBuildSlots();
-    });
-
-    skinGrid.appendChild(btn);
-  });
 }
 
 function renderSkillCard(skill, grid) {
@@ -5304,13 +5209,6 @@ function updateShop() {
   vipTitle.textContent = '\u{1F451} BOOSTS VIP EXCLUSIFS';
   grid.appendChild(vipTitle);
 
-  // Compteur slots boosts équipés
-  const boostCounter = document.createElement('div');
-  boostCounter.id = 'boostSlotCounter';
-  boostCounter.style.cssText = 'grid-column:1/-1;text-align:center;font-family:"Exo 2",sans-serif;font-size:0.7rem;color:rgba(255,255,255,0.55);margin-bottom:0.5rem;padding:0.4rem;background:rgba(57,255,20,0.05);border:1px solid rgba(57,255,20,0.15);border-radius:8px;';
-  const eq = (sd.equippedBoosts||[]).length;
-  boostCounter.innerHTML = `\u{1F4AA} <strong style="color:${eq>=3?'#39ff14':'#ffd700'}">${eq}/3</strong> boosts équipés — Appuie sur un boost acquis pour l\'équiper ou déséquiper`;
-  grid.appendChild(boostCounter);
   SHOP_ITEMS.filter(i => i.vipMin && !i.coinSkin && !i.coinAcc).forEach(item => renderShopItem(item, grid));
 
   // \u{2500}\u{2500} SKINS ACHETABLES AVEC COINS \u{2500}\u{2500}
@@ -5330,76 +5228,27 @@ function updateShop() {
   SHOP_ITEMS.filter(i => i.coinAcc).forEach(item => renderShopItem(item, grid));
 }
 
-function toggleBoostEquip(itemId) {
-  if (!sd.equippedBoosts) sd.equippedBoosts = [];
-  const idx = sd.equippedBoosts.indexOf(itemId);
-  if (idx >= 0) {
-    // Déséquiper
-    sd.equippedBoosts.splice(idx, 1);
-    showNotif('\u{274C} Boost déséquipé');
-  } else {
-    // Équiper : max 3
-    if (sd.equippedBoosts.length >= 3) {
-      showNotif('\u{26A0}\u{FE0F} Maximum 3 boosts équipés ! Déséquipe-en un d\'abord.');
-      return;
-    }
-    sd.equippedBoosts.push(itemId);
-    showNotif('\u{2705} Boost équipé !');
-  }
-  updateShop();
-  saveNow(false);
-}
-
 function renderShopItem(item, grid) {
   const owned   = isOwned(item.id);
   const reqMet  = !item.req || isOwned(item.req);
   const vipOk   = !item.vipMin || getPlayerVipLevel() >= item.vipMin;
   const locked  = item.vipMin && !vipOk;
-  const isVipBoost = item.vipMin && !item.coinSkin && !item.coinAcc;
-  const isEquipped = isVipBoost && (sd.equippedBoosts || []).includes(item.id);
-  const equippedCount = (sd.equippedBoosts || []).length;
 
   // Skin déjà débloqué via VIP (si le joueur a le bon niveau VIP)
   const skinAlreadyUnlocked = item.coinSkin !== undefined && item.vipMin && getPlayerVipLevel() >= item.vipMin;
 
   const div = document.createElement('div');
   div.className = 'shop-item' + (owned ? ' owned' : '') + (locked ? ' locked' : '');
-
-  // Style selon état boost VIP
-  if (isVipBoost && isEquipped) {
-    div.style.border = '2px solid #39ff14';
-    div.style.background = 'rgba(57,255,20,0.1)';
-    div.style.boxShadow = '0 0 12px rgba(57,255,20,0.3)';
-  } else if (isVipBoost && owned && !locked) {
-    div.style.border = '1.5px solid rgba(255,215,0,0.5)';
-  }
   if (item.consumable && owned) div.style.border = '1.5px solid #39ff14';
   if (item.consumable && owned) div.style.background = 'rgba(57,255,20,0.08)';
   if (locked) div.style.opacity = '0.55';
 
-  let priceDisplay;
-  if (isVipBoost && owned && !locked) {
-    const slotsLeft = 3 - equippedCount;
-    if (isEquipped) {
-      priceDisplay = '<span style="color:#39ff14;font-size:0.62rem;">\u{2705} ÉQUIPÉ — Tap pour retirer</span>';
-    } else if (slotsLeft <= 0) {
-      priceDisplay = '<span style="color:rgba(255,255,255,0.35);font-size:0.62rem;">\u{1F512} Slots pleins (3/3)</span>';
-    } else {
-      priceDisplay = `<span style="color:#ffd700;font-size:0.62rem;">\u{1F4AA} Tap pour équiper (${equippedCount}/3)</span>`;
-    }
-  } else if (item.consumable && owned) {
-    priceDisplay = '<span style="color:#39ff14;font-size:0.65rem;">\u{2705} ACTIVÉ</span>';
-  } else if (owned || skinAlreadyUnlocked) {
-    priceDisplay = '\u{2705} ACQUIS';
-  } else if (locked) {
-    priceDisplay = `<span style="color:#ffd700">\u{1F451} VIP ${item.vipMin}</span>`;
-  } else if (!reqMet) {
-    priceDisplay = '\u{1F512} Prérequis manquant';
-  } else if (item.price >= 10000) {
-    priceDisplay = `\u{1F4B0} ${(item.price/1000).toFixed(0)}k`;
-  } else {
-    priceDisplay = `\u{1F4B0} ${item.price}`;
-  }
+  const priceDisplay = item.consumable && owned ? `<span style="color:#39ff14;font-size:0.65rem;">\u{2705} ACTIVÉ</span>`
+    : (owned || skinAlreadyUnlocked) ? '\u{2705} ACQUIS'
+    : locked   ? `<span style="color:#ffd700">\u{1F451} VIP ${item.vipMin}</span>`
+    : !reqMet  ? '\u{1F512} Prérequis manquant'
+    : item.price >= 10000 ? `\u{1F4B0} ${(item.price/1000).toFixed(0)}k`
+    : `\u{1F4B0} ${item.price}`;
 
   div.innerHTML = `
     <div class="item-icon">${item.icon}</div>
@@ -5408,48 +5257,37 @@ function renderShopItem(item, grid) {
     <div class="item-price">${priceDisplay}</div>
   `;
 
-  if (isVipBoost && owned && !locked) {
-    // Toggle équipement
+  const canBuy = (!owned && !skinAlreadyUnlocked && reqMet && !locked) || (item.consumable && reqMet && !locked);
+  if (canBuy) {
     div.style.cursor = 'pointer';
-    div.onclick = () => toggleBoostEquip(item.id);
-  } else {
-    const canBuy = (!owned && !skinAlreadyUnlocked && reqMet && !locked) || (item.consumable && reqMet && !locked);
-    if (canBuy) {
-      div.style.cursor = 'pointer';
-      div.onclick = async () => {
-        if (sd.coins < item.price) { showNotif('\u{274C} Pas assez de coins !'); return; }
-        sd.coins -= item.price;
-        if (!sd.ownedItems.includes(item.id)) sd.ownedItems.push(item.id);
+    div.onclick = async () => {
+      if (sd.coins < item.price) { showNotif('\u{274C} Pas assez de coins !'); return; }
+      sd.coins -= item.price;
+      if (!sd.ownedItems.includes(item.id)) sd.ownedItems.push(item.id);
 
-        // Débloquer le skin VIP correspondant
-        if (item.coinSkin !== undefined) {
-          const skinKey = 'vip_skin_' + item.coinSkin;
-          if (!sd.ownedItems.includes(skinKey)) sd.ownedItems.push(skinKey);
-          sd.selectedSkin = item.coinSkin;
-          renderSkinRow();
-          showNotif(`${item.icon} Skin ${item.name} débloqué et équipé !`);
-        }
-        else if (item.coinAcc) {
-          if (!sd.ownedItems.includes('acc_' + item.coinAcc)) sd.ownedItems.push('acc_' + item.coinAcc);
-          showNotif(`${item.icon} ${item.name} débloqué ! Équipe-le dans Accessoires.`);
-        } else {
-          // Boost VIP nouvellement acquis : équiper auto si slot dispo
-          if (isVipBoost && (sd.equippedBoosts||[]).length < 3) {
-            if (!sd.equippedBoosts) sd.equippedBoosts = [];
-            sd.equippedBoosts.push(item.id);
-            showNotif(`${item.icon} ${item.name} acquis et équipé !`);
-          } else {
-            showNotif(`${item.icon} ${item.name} activé pour cette partie !`);
-          }
-        }
+      // Débloquer le skin VIP correspondant
+      if (item.coinSkin !== undefined) {
+        const skinKey = 'vip_skin_' + item.coinSkin;
+        if (!sd.ownedItems.includes(skinKey)) sd.ownedItems.push(skinKey);
+        // Activer ce skin automatiquement
+        sd.selectedSkin = item.coinSkin;
+        renderSkinRow();
+        showNotif(`${item.icon} Skin ${item.name} débloqué et équipé !`);
+      }
+      // Débloquer l'accessoire correspondant
+      else if (item.coinAcc) {
+        if (!sd.ownedItems.includes('acc_' + item.coinAcc)) sd.ownedItems.push('acc_' + item.coinAcc);
+        showNotif(`${item.icon} ${item.name} débloqué ! Équipe-le dans Accessoires.`);
+      } else {
+        showNotif(`${item.icon} ${item.name} activé pour cette partie !`);
+      }
 
-        updateShop();
-        sfxBuy();
-        await saveNow(false);
-      };
-    } else if (locked) {
-      div.onclick = () => { showNotif(`\u{1F451} VIP niveau ${item.vipMin} requis !`); showScreen('vipScreen'); };
-    }
+      updateShop();
+      sfxBuy();
+      await saveNow(false);
+    };
+  } else if (locked) {
+    div.onclick = () => { showNotif(`\u{1F451} VIP niveau ${item.vipMin} requis !`); showScreen('vipScreen'); };
   }
   grid.appendChild(div);
 }
@@ -7825,9 +7663,6 @@ function startGame(mode='normal', realPlayerCount=0) {
   const player = new Snake(safePos.x, safePos.y, playerSkin, playerName, true);
   player.score = 0;
   player.kills = 0;
-  // GROS SERPENT boost : taille de départ +20%
-  const startSizeBonus = hasStat('startSize');
-  if (startSizeBonus > 1) player.length = Math.floor(10 * startSizeBonus);
   snakes.unshift(player); // joueur toujours en index 0
 
   const foods = [];
@@ -8207,7 +8042,7 @@ function gameLoop(timestamp = 0) {
 
   // Magnet: attract food
   if(p.alive && p.magnetActive) {
-    const range = 150 * (hasStat('magnetRange') > 1 ? 4 : 1);
+    const range = 150 * (hasStat('magnetRange') > 1 ? 2 : 1);
     gs.foods.forEach(f => {
       const d = p.head.dist(f.pos);
       if(d < range && d > 5) {
@@ -8559,30 +8394,16 @@ function gameLoop(timestamp = 0) {
   // Game over check
   if(p && !p.alive) {
     if(!gs.gameOverTriggered) {
-      // RESURRECTION : 1 vie supplementaire si boost acquis
-      if(!gs._reviveUsed && hasStat('hasRevive')) {
-        gs._reviveUsed = true;
-        const safePos = safeSpawn(gs, 400, true);
-        p.head.x = safePos.x; p.head.y = safePos.y;
-        p.path = [];
-        for(let i=0; i<40; i++) p.path.push(new Vec2(safePos.x - i * SEGMENT_GAP * 0.5, safePos.y));
-        p.alive = true;
-        p.shieldActive = true;
-        p.spawnImmune = true;
-        p.shieldTimer = 4;
-        p.energy = 100;
-        showNotif('\u{1F48E} RESURRECTION ! Vie supplementaire !');
-        return;
-      }
       gs.gameOverTriggered = true;
       cancelAnimationFrame(animId);
       setTimeout(() => {
         showGameOver(gs);
-      }, brActive ? 2000 : 1500);
+      }, brActive ? 2000 : 1500); // dГѓЖ’Г‚В©lai plus long en BR pour voir l'explosion
     }
     return;
   }
 }
+
 function drawGrid(ctx, cam) {
   // Mobile : grille moins dense et 1 seul path
   const gridSize = IS_MOBILE ? 90 : 60;
@@ -10630,7 +10451,6 @@ window.addEventListener('beforeinstallprompt', (e) => {
   if (btn && !inGame) btn.style.display = 'block';
   if (!_pwaIsStandalone()) setTimeout(showPwaPopup, 3000);
 });
-
 // Clic sur le bouton install flottant
 document.addEventListener('DOMContentLoaded', () => {
   const btnInst = document.getElementById('btn-install');
@@ -10645,7 +10465,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
-
 window.addEventListener('appinstalled', () => {
   hidePwaPopup();
   const btn = document.getElementById('btn-install');
