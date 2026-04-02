@@ -6391,8 +6391,8 @@ const ZONES = [
   { x:3000, y:3000, r:450, type:'xp',     color:'rgba(191,0,255,0.08)', label:'\u{2B50} ZONE XP',     effect:'xp' },
 ];
 
-let animId;
-let gameState = { player: null, snakes: [], foods: [], powerups: [] };
+var animId;
+var gameState = { player: null, snakes: [], foods: [], powerups: [] };
 
 class Vec2 {
   constructor(x, y) { this.x = x; this.y = y; }
@@ -7940,7 +7940,7 @@ function useSkill(slotIndex) {
 
 // \u{2500}\u{2500} GAME LOOP \u{2500}\u{2500}
 let lastTime = 0;
-const IS_MOBILE  = /Android|iPhone|iPad/i.test(navigator.userAgent);
+var IS_MOBILE  = /Android|iPhone|iPad/i.test(navigator.userAgent);
 const FRAME_MS   = 16.67; // 60fps partout \u{2014} fluiditГѓЖ’Г‚В© maximale
 const GLOW_ON    = false; // desactive shadowBlur partout - trop lourd GPU Canvas2D
 
