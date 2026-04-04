@@ -2245,7 +2245,7 @@
 </div>
 
 <!-- chat supprimé -->
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 // \u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}
 //  SERPEX - Complete Game Engine + Supabase Auth
 // \u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}
@@ -8261,6 +8261,13 @@ function gameLoop(timestamp = 0) {
         for(const { snake: victim, ptIdx } of cell) {
           if(!victim.alive || victim === attacker) continue;
           if(areSameTeam(attacker, victim)) continue;
+          // ── TRÊVE BR phase 0 : bots/boss ne se tuent PAS entre eux pendant le délai initial ──
+          // Ils peuvent toujours tuer les vrais joueurs
+          if(brActive && brPhase === 0 && brShrinkTimer > 0) {
+            const aHuman = attacker.isPlayer || attacker.isRemotePlayer;
+            const vHuman = victim.isPlayer   || victim.isRemotePlayer;
+            if(!aHuman && !vHuman) continue;
+          }
           // \u{2500}\u{2500} BOSS IMMUNITГѓЖ’° : seul un joueur humain peut tuer un boss \u{2500}\u{2500}
           if(victim.isBoss && !attacker.isPlayer && !attacker.isRemotePlayer) continue;
           const pt = victim.path[ptIdx];
@@ -8309,6 +8316,12 @@ function gameLoop(timestamp = 0) {
       const sB = gs.snakes[b];
       if(!sB.alive) continue;
       if(sA.head.dist(sB.head) < sA.size + sB.size) {
+        // ── TRÊVE BR phase 0 : bots/boss ne se tuent PAS entre eux (head-to-head) ──
+        if(brActive && brPhase === 0 && brShrinkTimer > 0) {
+          const aHuman = sA.isPlayer || sA.isRemotePlayer;
+          const bHuman = sB.isPlayer || sB.isRemotePlayer;
+          if(!aHuman && !bHuman) continue;
+        }
         // \u{2500}\u{2500} BOSS IMMUNITГѓЖ’° : bot ne peut pas tuer un boss tГѓЖ’Г‚ВЄte ГѓЖ’Г‚В  tГѓЖ’Г‚ВЄte \u{2500}\u{2500}
         if(sA.isBoss && !sB.isPlayer && !sB.isRemotePlayer) continue;
         if(sB.isBoss && !sA.isPlayer && !sA.isRemotePlayer) continue;
@@ -10412,7 +10425,7 @@ function closeAdAndRestart() {
   </div>
 </div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 function acceptCookies() {
   localStorage.setItem('cookie_consent', 'accepted');
   document.getElementById('cookieBanner').style.display = 'none';
@@ -10580,6 +10593,18 @@ cursor:pointer;
   </div>
 </div>
 
+<script>
+let deferredPrompt;
+let _pwaShownSession = false;
+
+function _pwaIsStandalone() {
+  return window.matchMedia('(display-mode: standalone)').matches
+      || window.navigator.standalone === true;
+}
+
+function showPwaPopup() {
+  if (_pwaShownSession) return;
+  if (_pwaIsStandalone()) return;
 <script>
 let deferredPrompt;
 let _pwaShownSession = false;
