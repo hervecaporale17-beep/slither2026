@@ -2245,7 +2245,7 @@
 </div>
 
 <!-- chat supprimé -->
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 // \u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}
 //  SERPEX - Complete Game Engine + Supabase Auth
 // \u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}
@@ -6617,7 +6617,7 @@ class Snake {
         if(humanSnake && humanDist<1200) {
           bossDesired=Math.atan2(humanFutPos.y-hy,humanFutPos.x-hx);
           this.boosting=humanDist<800;
-        } else if(nearestBot && nearestBotDist<600) {
+        } else if(nearestBot && nearestBotDist<600 && !brActive) {
           bossDesired=nearestBot.head.sub(this.head).angle();
           this.boosting=nearestBotDist<400;
         } else if(bestFood) {
@@ -6765,7 +6765,8 @@ class Snake {
       }
 
       // \u{2500}\u{2500} Proie : score selon facilitГѓЖ’Г‚В© ГѓЖ’Г‚В  tuer \u{2500}\u{2500}
-      if(d<500){
+      if(d<500 && (!brActive || s.isPlayer || s.isRemotePlayer)){
+        // BR : bots ne ciblent intentionnellement que les vrais joueurs
         // Score de la proie = plus facile ГѓЖ’Г‚В  tuer si petite et va dans notre direction
         const angleToThem=Math.atan2(s.head.y-hy,s.head.x-hx);
         let aDiff=Math.abs(angleToThem-this.angle);
@@ -10425,7 +10426,7 @@ function closeAdAndRestart() {
   </div>
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 function acceptCookies() {
   localStorage.setItem('cookie_consent', 'accepted');
   document.getElementById('cookieBanner').style.display = 'none';
@@ -10628,6 +10629,29 @@ function showPwaPopup() {
 }
 
 function hidePwaPopup() {
+  const popup = document.getElementB
+<script>
+let deferredPrompt;
+let _pwaShownSession = false;
+
+function _pwaIsStandalone() {
+  return window.matchMedia('(display-mode: standalone)').matches
+      || window.navigator.standalone === true;
+}
+
+function showPwaPopup() {
+  if (_pwaShownSession) return;
+  if (_pwaIsStandalone()) return;
+  const gameEl = document.getElementById('game');
+  if (gameEl && gameEl.classList.contains('active')) return;
+  const popup = document.getElementById('pwaInstallPopup');
+  if (popup) {
+    popup.style.cssText += ';display:flex!important;z-index:999999!important;';
+    _pwaShownSession = true;
+  }
+}
+
+function hidePwaPopup() {
   const popup = document.getElementById('pwaInstallPopup');
   if (popup) popup.style.display = 'none';
 }
@@ -10641,7 +10665,6 @@ window.addEventListener('beforeinstallprompt', (e) => {
   if (!_pwaIsStandalone()) setTimeout(showPwaPopup, 3000);
 });
 
-// Clic sur le bouton install flottant
 document.addEventListener('DOMContentLoaded', () => {
   const btnInst = document.getElementById('btn-install');
   if (btnInst) {
