@@ -2245,7 +2245,7 @@
 </div>
 
 <!-- chat supprimé -->
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 // \u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}
 //  SERPEX - Complete Game Engine + Supabase Auth
 // \u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}
@@ -6742,24 +6742,29 @@ class Snake {
       const futureDx = futureX-hx, futureDy = futureY-hy;
       const futureDist = Math.sqrt(futureDx*futureDx+futureDy*futureDy);
 
-      if(s.length > myLen * 1.05) {
-        // Danger si sa position future est proche de moi
-        if(futureDist < 180 && futureDist < dangerDist){
+      // En BR : tout serpent est dangereux (même taille égale), seuils élargis
+      const brDangerMode = brActive && !s.isPlayer && !s.isRemotePlayer && !this.isPlayer;
+      const dangerSizeThreshold = brDangerMode ? 0 : myLen * 1.05;
+      const dangerHeadDist      = brDangerMode ? 260 : 180;
+      if(s.length > dangerSizeThreshold || brDangerMode) {
+        if(futureDist < dangerHeadDist && futureDist < dangerDist){
           dangerHead=s.head; dangerDist=futureDist;
         }
       }
 
-      // Danger corps sur ma trajectoire
-      if(d<320){
+      // Danger corps sur ma trajectoire — distance augmentée en BR
+      const bodyCheckDist  = brDangerMode ? 420 : 320;
+      const bodyHitRadius  = brDangerMode ? 170 : 130;
+      if(d < bodyCheckDist){
         const checkN=Math.min(s.path.length,16);
         for(let si=1;si<checkN;si++){
           const seg=s.path[si];if(!seg)continue;
           const sdx=seg.x-hx,sdy=seg.y-hy,sd2=sdx*sdx+sdy*sdy;
-          if(sd2<130*130){
+          if(sd2<bodyHitRadius*bodyHitRadius){
             const aToSeg=Math.atan2(sdy,sdx);
             let aD=Math.abs(aToSeg-this.angle);
             while(aD>Math.PI)aD=Math.abs(aD-Math.PI*2);
-            if(aD<1.1){dangerBody=seg;dangerDist=Math.min(dangerDist,Math.sqrt(sd2));break;}
+            if(aD<1.2){dangerBody=seg;dangerDist=Math.min(dangerDist,Math.sqrt(sd2));break;}
           }
         }
       }
@@ -6781,7 +6786,8 @@ class Snake {
     }
 // \u{2550}\u{2550}\u{2550}\u{2550} DГѓЖ’°CISION \u{2550}\u{2550}\u{2550}\u{2550}
 
-    const isScared = dangerDist < 200 || (dangerBody!==null && dangerDist<160);
+    const brScaredBoost = brActive ? 60 : 0;
+    const isScared = dangerDist < (200 + brScaredBoost) || (dangerBody!==null && dangerDist<(160 + brScaredBoost));
     const hasPrey  = preyTarget!==null && preyDist<450 && preyScore>0.15;
     const hasFood  = foodTarget!==null;
 
@@ -10413,7 +10419,7 @@ function closeAdAndRestart() {
   </div>
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 function acceptCookies() {
   localStorage.setItem('cookie_consent', 'accepted');
   document.getElementById('cookieBanner').style.display = 'none';
@@ -10660,43 +10666,45 @@ function showPwaPopup() {
   }
 }
 
+function hidePwaPopup()
+<script>
+let deferredPrompt;
+let _pwaShownSession = false;
+function _pwaIsStandalone() {
+  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+}
+function showPwaPopup() {
+  if (_pwaShownSession) return;
+  if (_pwaIsStandalone()) return;
+  const gameEl = document.getElementById('game');
+  if (gameEl && gameEl.classList.contains('active')) return;
+  const popup = document.getElementById('pwaInstallPopup');
+  if (popup) { popup.style.cssText += ';display:flex!important;z-index:999999!important;'; _pwaShownSession = true; }
+}
 function hidePwaPopup() {
   const popup = document.getElementById('pwaInstallPopup');
   if (popup) popup.style.display = 'none';
 }
-
 window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
+  e.preventDefault(); deferredPrompt = e;
   const btn = document.getElementById('btn-install');
-  const inGame = document.getElementById('game');
-  if (btn && !inGame) btn.style.display = 'block';
+  if (btn) btn.style.display = 'block';
   if (!_pwaIsStandalone()) setTimeout(showPwaPopup, 3000);
 });
-
 document.addEventListener('DOMContentLoaded', () => {
   const btnInst = document.getElementById('btn-install');
   if (btnInst) {
     btnInst.addEventListener('click', () => {
-      if (deferredPrompt) {
-        deferredPrompt.prompt();
-        deferredPrompt.userChoice.then((choiceResult) => {
-          deferredPrompt = null;
-          hidePwaPopup();
-        });
-      } else {
-        showPwaPopup();
-      }
+      if (deferredPrompt) { deferredPrompt.prompt(); deferredPrompt.userChoice.then(() => { deferredPrompt = null; hidePwaPopup(); }); }
+      else { showPwaPopup(); }
     });
   }
 });
-
 window.addEventListener('appinstalled', () => {
   hidePwaPopup();
   const btn = document.getElementById('btn-install');
   if (btn) btn.style.display = 'none';
-  deferredPrompt = null;
-  _pwaShownSession = true;
+  deferredPrompt = null; _pwaShownSession = true;
 });
 </script>
 </body>
