@@ -6742,19 +6742,18 @@ class Snake {
       const futureDx = futureX-hx, futureDy = futureY-hy;
       const futureDist = Math.sqrt(futureDx*futureDx+futureDy*futureDy);
 
-      // En BR : tout serpent est dangereux (même taille égale), seuils élargis
+      // BR : tout serpent est dangereux quelle que soit la taille, seuils élargis
       const brDangerMode = brActive && !s.isPlayer && !s.isRemotePlayer && !this.isPlayer;
-      const dangerSizeThreshold = brDangerMode ? 0 : myLen * 1.05;
-      const dangerHeadDist      = brDangerMode ? 260 : 180;
-      if(s.length > dangerSizeThreshold || brDangerMode) {
+      const dangerHeadDist = brDangerMode ? 260 : 180;
+      if(s.length > myLen * 1.05 || brDangerMode) {
         if(futureDist < dangerHeadDist && futureDist < dangerDist){
           dangerHead=s.head; dangerDist=futureDist;
         }
       }
 
       // Danger corps sur ma trajectoire — distance augmentée en BR
-      const bodyCheckDist  = brDangerMode ? 420 : 320;
-      const bodyHitRadius  = brDangerMode ? 170 : 130;
+      const bodyCheckDist = brDangerMode ? 420 : 320;
+      const bodyHitRadius = brDangerMode ? 170 : 130;
       if(d < bodyCheckDist){
         const checkN=Math.min(s.path.length,16);
         for(let si=1;si<checkN;si++){
@@ -6788,7 +6787,9 @@ class Snake {
 
     const brScaredBoost = brActive ? 60 : 0;
     const isScared = dangerDist < (200 + brScaredBoost) || (dangerBody!==null && dangerDist<(160 + brScaredBoost));
-    const hasPrey  = preyTarget!==null && preyDist<450 && preyScore>0.15;
+    // BR : un bot n'attaque un vrai joueur que s'il est nettement plus grand (1.4x)
+    const brCanAttack = !brActive || !preyTarget || !(preyTarget.isPlayer || preyTarget.isRemotePlayer) || myLen > preyTarget.length * 1.4;
+    const hasPrey  = preyTarget!==null && preyDist<450 && preyScore>0.15 && brCanAttack;
     const hasFood  = foodTarget!==null;
 
     let desiredAngle = this.ai_targetAngle;
