@@ -2244,7 +2244,7 @@
 </div>
 
 <!-- chat supprimé -->
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
 // \u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}
 //  SERPEX - Complete Game Engine + Supabase Auth
 // \u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}
@@ -10427,7 +10427,7 @@ function closeAdAndRestart() {
   </div>
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
 function acceptCookies() {
   localStorage.setItem('cookie_consent', 'accepted');
   document.getElementById('cookieBanner').style.display = 'none';
@@ -10608,4 +10608,42 @@ function showPwaPopup() {
   if (_pwaShownSession) return;
   if (_pwaIsStandalone()) return;
   const gameEl = document.getElementById('game');
-  if (gameEl && gameEl.c
+  if (gameEl && gameEl.classList.contains('active')) return;
+  const popup = document.getElementById('pwaInstallPopup');
+  if (popup) {
+    popup.style.cssText += ';display:flex!important;z-index:999999!important;';
+    _pwaShownSession = true;
+  }
+}
+
+function hidePwaPopup() {
+  const popup = document.getElementById('pwaInstallPopup');
+  if (popup) popup.style.display = 'none';
+  const btn = document.getElementById('btn-install');
+  if (btn) btn.style.display = 'none';
+}
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  const btn = document.getElementById('btn-install');
+  if (btn) btn.style.display = 'block';
+  setTimeout(showPwaPopup, 8000);
+});
+
+document.getElementById('btn-install')?.addEventListener('click', () => {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(() => { deferredPrompt = null; hidePwaPopup(); });
+  }
+});
+
+window.addEventListener('appinstalled', () => {
+  deferredPrompt = null;
+  hidePwaPopup();
+  console.log('[SERPEX PWA] App installée avec succès');
+});
+</script>
+
+</body>
+</html>
