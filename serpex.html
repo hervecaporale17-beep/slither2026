@@ -2244,7 +2244,7 @@
 </div>
 
 <!-- chat supprimé -->
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 // \u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}
 //  SERPEX - Complete Game Engine + Supabase Auth
 // \u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}\u{2550}
@@ -10427,7 +10427,7 @@ function closeAdAndRestart() {
   </div>
 </div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 function acceptCookies() {
   localStorage.setItem('cookie_consent', 'accepted');
   document.getElementById('cookieBanner').style.display = 'none';
@@ -10608,44 +10608,4 @@ function showPwaPopup() {
   if (_pwaShownSession) return;
   if (_pwaIsStandalone()) return;
   const gameEl = document.getElementById('game');
-  if (gameEl && gameEl.classList.contains('active')) return;
-  const popup = document.getElementById('pwaInstallPopup');
-  if (popup) {
-    popup.style.cssText += ';display:flex!important;z-index:999999!important;';
-    _pwaShownSession = true;
-  }
-}
-
-function hidePwaPopup() {
-  const popup = document.getElementById('pwaInstallPopup');
-  if (popup) popup.style.display = 'none';
-  const btn = document.getElementById('btn-install');
-  if (btn) btn.style.display = 'none';
-}
-
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  // Afficher le bouton fallback
-  const btn = document.getElementById('btn-install');
-  if (btn) btn.style.display = 'block';
-  // Afficher le popup après 8s si l'utilisateur n'est pas déjà standalone
-  setTimeout(showPwaPopup, 8000);
-});
-
-document.getElementById('btn-install')?.addEventListener('click', () => {
-  if (deferredPrompt) {
-    deferredPrompt.prompt();
-    deferredPrompt.userChoice.then(() => { deferredPrompt = null; hidePwaPopup(); });
-  }
-});
-
-window.addEventListener('appinstalled', () => {
-  deferredPrompt = null;
-  hidePwaPopup();
-  console.log('[SERPEX PWA] App installée avec succès');
-});
-</script>
-
-</body>
-</html>
+  if (gameEl && gameEl.c
