@@ -4432,8 +4432,7 @@ function cleanupLobby() {
 //  📡 ABLY — SYNC POSITIONS MULTIJOUEUR PAR RÉGION
 // ═══════════════════════════════════════════════════════════════
 
-// ⚠️ Clé Ably partagée avec SnakeWars — channels séparés par jeu+région
-const ABLY_KEY = 'AIPAiA.OrCkDg:QSD-VKej2t8fdwrWr0euEf9blZyNyq_gjb7iuMhG53g';
+// 🔐 Clé Ably via token Supabase (jamais exposée côté client)
 
 const SYNC_INTERVAL_MS = 100;  // Envoi position 10x/sec via Ably
 const SYNC_TIMEOUT_MS  = 2000; // Joueur déco après 2s sans signal
@@ -4486,7 +4485,10 @@ function startPositionSync() {
 
   try {
     if (!ablyClient) {
-      ablyClient = new Ably.Realtime({ key: ABLY_KEY });
+      ablyClient = new Ably.Realtime({
+        authUrl: SUPA_URL + '/functions/v1/ably-token',
+        authHeaders: { 'apikey': SUPA_KEY }
+      });
     }
     ablyChannel = ablyClient.channels.get(channelName);
 
